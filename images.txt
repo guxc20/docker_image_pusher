@@ -1,1 +1,1 @@
-fluent/fluent-bit --platform=linux/arm64
+fluent/fluent-bit:latest --platform=linux/arm64
