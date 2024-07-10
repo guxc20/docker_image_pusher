@@ -1,3 +1,4 @@
 --platform=linux/arm64 fluent/fluent-bit:latest
 mysql:latest
 docker.io/bitnami/kafka:3.6
+confluentinc/cp-kafka-connect:latest
