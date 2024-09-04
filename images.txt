@@ -5,4 +5,4 @@ confluentinc/cp-kafka-connect:latest
 docker.io/dragonflyoss/manager:v2.1.55
 docker.io/dragonflyoss/client:v0.1.103
 docker.io/dragonflyoss/scheduler:v2.1.55
-hello-world
+hello-world:latest
