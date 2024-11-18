@@ -1,8 +1,4 @@
---platform=linux/arm64 fluent/fluent-bit:latest
+--platform=linux/amd64 golang:1.18 
 mysql:latest
 docker.io/bitnami/kafka:3.6
-confluentinc/cp-kafka-connect:latest
-docker.io/dragonflyoss/manager:v2.1.55
-docker.io/dragonflyoss/client:v0.1.103
-docker.io/dragonflyoss/scheduler:v2.1.55
 hello-world:latest
