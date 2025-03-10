@@ -1,4 +1,5 @@
 --platform=linux/amd64 golang:1.18 
+--platform=linux/arm64 moby/buildkit:buildx-stable-1
 --platform=linux/amd64 debian:stable-slim
 mysql:latest
 docker.io/bitnami/kafka:3.6
