@@ -1,7 +1,7 @@
 --platform=linux/amd64 golang:1.18 
 --platform=linux/arm64 moby/buildkit:buildx-stable-1
 --platform=linux/amd64 debian:stable-slim
---platform=linux/arm64 postgres
+--platform=linux/arm64 postgres:latest
 mysql:latest
 docker.io/bitnami/kafka:3.6
 hello-world:latest
