@@ -1,4 +1,4 @@
 --platform=linux/arm64 postgres:latest
---platform=linux/arm64 mysql:5.8
+--platform=linux/arm64 mysql:5.7
 mysql:latest
 hello-world:latest
