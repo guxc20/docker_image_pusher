@@ -1,11 +1,5 @@
 --platform=linux/arm64 postgres:latest
-hello-world:latest
-registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.19
 docker.io/library/golang:1.22-alpine
 alpine:latest
-node:20-alpine
-nginx:stable-alpine
 --platform=linux/arm64 alpine:latest
---platform=linux/arm64 node:20-alpine
---platform=linux/arm64 nginx:stable-alpine
-centos:7
+--platform=linux/arm64 centos:7
