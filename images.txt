@@ -8,3 +8,4 @@ nginx:stable-alpine
 --platform=linux/arm64 alpine:latest
 --platform=linux/arm64 node:20-alpine
 --platform=linux/arm64 nginx:stable-alpine
+centos:7
