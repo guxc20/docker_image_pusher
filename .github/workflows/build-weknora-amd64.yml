@@ -36,6 +36,8 @@ jobs:
         working-directory: WeKnora
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+          GOPROXY: https://proxy.golang.org,direct
+          GOSUMDB: sum.golang.org
         run: make build-images
 
       - name: Verify image architectures
