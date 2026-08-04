@@ -1,0 +1,105 @@
+name: Build WeKnora linux-amd64 images
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build-weknora-amd64.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Check out helper repository
+        uses: actions/checkout@v4
+
+      - name: Clone latest WeKnora source
+        run: |
+          git clone --depth 1 https://github.com/Tencent/WeKnora.git
+          cd WeKnora
+          echo "WEKNORA_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "WEKNORA_SHORT_COMMIT=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_ENV"
+
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          docker system prune -af || true
+          df -h
+
+      - name: Build all WeKnora images for linux-amd64
+        working-directory: WeKnora
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: make build-images
+
+      - name: Verify image architectures
+        run: |
+          for image in app docreader ui sandbox; do
+            arch="$(docker image inspect "wechatopenai/weknora-${image}:latest" --format '{{.Os}}/{{.Architecture}}')"
+            test "$arch" = "linux/amd64"
+            echo "weknora-${image}: $arch"
+          done
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push images
+        run: |
+          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          for image in app docreader ui sandbox; do
+            source="wechatopenai/weknora-${image}:latest"
+            latest="ghcr.io/${owner}/weknora-${image}:latest-amd64"
+            pinned="ghcr.io/${owner}/weknora-${image}:git-${WEKNORA_SHORT_COMMIT}-amd64"
+            docker tag "$source" "$latest"
+            docker tag "$source" "$pinned"
+            docker push "$latest"
+            docker push "$pinned"
+          done
+
+      - name: Create server deployment bundle
+        working-directory: WeKnora
+        run: |
+          mkdir -p ../weknora-deploy-amd64/config ../weknora-deploy-amd64/skills
+          cp docker-compose.yml ../weknora-deploy-amd64/
+          cp config/config.yaml ../weknora-deploy-amd64/config/
+          cp -R skills/preloaded ../weknora-deploy-amd64/skills/
+          cp .env.example ../weknora-deploy-amd64/.env
+          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          tag="git-${WEKNORA_SHORT_COMMIT}-amd64"
+          sed -i "s#wechatopenai/weknora-app:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-app:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
+          sed -i "s#wechatopenai/weknora-docreader:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-docreader:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
+          sed -i "s#wechatopenai/weknora-ui:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-ui:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
+          sed -i "s#wechatopenai/weknora-sandbox:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-sandbox:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
+          printf 'WEKNORA_COMMIT=%s\nIMAGE_TAG=%s\n' "$WEKNORA_COMMIT" "$tag" > ../weknora-deploy-amd64/BUILD-INFO
+          tar -C .. -czf ../weknora-deploy-amd64.tar.gz weknora-deploy-amd64
+
+      - name: Upload deployment bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: weknora-deploy-linux-amd64-${{ env.WEKNORA_SHORT_COMMIT }}
+          path: weknora-deploy-amd64.tar.gz
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Write build summary
+        run: |
+          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          {
+            echo "## WeKnora linux/amd64 images"
+            echo
+            echo "Source commit: \`${WEKNORA_COMMIT}\`"
+            echo
+            for image in app docreader ui sandbox; do
+              echo "- \`docker pull ghcr.io/${owner}/weknora-${image}:git-${WEKNORA_SHORT_COMMIT}-amd64\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
