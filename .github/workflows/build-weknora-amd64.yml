@@ -105,3 +105,5 @@ jobs:
               echo "- \`docker pull ghcr.io/${owner}/weknora-${image}:git-${WEKNORA_SHORT_COMMIT}-amd64\`"
             done
           } >> "$GITHUB_STEP_SUMMARY"
+
+# Rebuild marker: 2026-08-05-main-350d9e4
