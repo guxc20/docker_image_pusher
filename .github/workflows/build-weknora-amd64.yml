@@ -21,7 +21,7 @@ jobs:
 
       - name: Clone latest WeKnora source
         run: |
-          git clone --depth 1 --branch feat/update-api-key-kb-scope https://github.com/estongu/WeKnora.git
+          git clone --depth 1 --branch main https://github.com/Tencent/WeKnora.git
           cd WeKnora
           echo "WEKNORA_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           echo "WEKNORA_SHORT_COMMIT=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_ENV"
@@ -60,8 +60,8 @@ jobs:
           owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
           for image in app docreader ui sandbox; do
             source="wechatopenai/weknora-${image}:latest"
-            latest="ghcr.io/${owner}/weknora-${image}:feat-update-api-key-kb-scope-amd64"
-            pinned="ghcr.io/${owner}/weknora-${image}:feat-update-api-key-kb-scope-${WEKNORA_SHORT_COMMIT}-amd64"
+            latest="ghcr.io/${owner}/weknora-${image}:latest-amd64"
+            pinned="ghcr.io/${owner}/weknora-${image}:git-${WEKNORA_SHORT_COMMIT}-amd64"
             docker tag "$source" "$latest"
             docker tag "$source" "$pinned"
             docker push "$latest"
@@ -77,7 +77,7 @@ jobs:
           cp -R skills/preloaded ../weknora-deploy-amd64/skills/
           cp .env.example ../weknora-deploy-amd64/.env
           owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          tag="feat-update-api-key-kb-scope-${WEKNORA_SHORT_COMMIT}-amd64"
+          tag="git-${WEKNORA_SHORT_COMMIT}-amd64"
           sed -i "s#wechatopenai/weknora-app:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-app:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
           sed -i "s#wechatopenai/weknora-docreader:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-docreader:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
           sed -i "s#wechatopenai/weknora-ui:\${WEKNORA_VERSION:-latest}#ghcr.io/${owner}/weknora-ui:${tag}#" ../weknora-deploy-amd64/docker-compose.yml
@@ -102,8 +102,8 @@ jobs:
             echo "Source commit: \`${WEKNORA_COMMIT}\`"
             echo
             for image in app docreader ui sandbox; do
-              echo "- \`docker pull ghcr.io/${owner}/weknora-${image}:feat-update-api-key-kb-scope-${WEKNORA_SHORT_COMMIT}-amd64\`"
+              echo "- \`docker pull ghcr.io/${owner}/weknora-${image}:git-${WEKNORA_SHORT_COMMIT}-amd64\`"
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
-# Rebuild marker: 2026-08-10-estongu-api-key-scope-dac36d2
+# Rebuild marker: 2026-08-12-tencent-main-cc690bb
